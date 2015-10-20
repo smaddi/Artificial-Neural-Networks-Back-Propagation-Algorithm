@@ -8,9 +8,19 @@ clc;
 %% Loading Data
 data = importdata('HW2_data.mat');%x is feature
                                   %y is loading data
-all_feature_label = data.y;%Feature lable
-all_feature = data.x;%Features in coloumns
-all_feature = normc(all_feature); % Normalization
+all_feature_label = data.feature_label;%Feature label
+all_feature = data.X;%Features in coloumns
+all_class = data.Y;% Class for respective examples
+
+%all_feature = normc(all_feature); % Normalization
+
+%--------------------If needed normalizing data----------------------------
+max_x = max(all_feature,[],1);
+min_x = min(all_feature,[],1);
+[row,col] = size(all_feature);
+all_feature = ((repmat(max_x,row,1)-all_feature)./repmat(max_x-min_x,row,1));
+[m n] = size(all_feature);
+
 [total_trails_available,total_feature_available] = size(all_feature);
 clearvars data;
 % Data Related Parameters
@@ -35,8 +45,10 @@ end
 
 % Extracting data for specified features
 selected_features = zeros(total_trails_available,length(feat_coloumn));
+selected_features_label = cell(1,length(feat_coloumn));
 for i = 1: length(feat_coloumn)
-    selected_features(:,i)=all_feature(:,feat_coloumn(i));
+    selected_features(:,i)=all_feature(:,feat_coloumn(i));%Features slected by using mode by user
+    selected_features_label(:,i) = all_feature_label(:,feat_coloumn(i));% labels of those festures selected by user   
 end
 clear i;
 [examples_selected_feature,total_feature_selected]=size(selected_features);
@@ -58,18 +70,22 @@ end
 
 % Generating Training Data 
 training_data = zeros(length(train_example_rows),length(feat_coloumn));
+training_data_class = zeros(length(train_example_rows),1);
 for i = 1: length(train_example_rows)
     training_data(i,:)=selected_features(train_example_rows(i),:);
+    training_data_class(i,:)=all_class(train_example_rows(i),:);
 end
 
 % Generating Testing Data 
 testing_data = zeros(length(test_example_rows),length(feat_coloumn));
+testing_data_class = zeros(length(test_example_rows),1);
 for i = 1: length(test_example_rows)
     testing_data(i,:)=selected_features(test_example_rows(i),:);
+    testing_data_class(i,:)=all_class(test_example_rows(i),:);
 end
 
 % clearring all variables 
-clearvars -except training_data testing_data; 
+clearvars -except training_data testing_data training_data_class testing_data_class selected_features_label; 
 
 %% setup class labels as output of output nodes
 Target = zeros(m,2);
